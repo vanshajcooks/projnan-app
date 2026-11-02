@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:probon_app/core/theme/app_theme.dart';
 import 'package:probon_app/features/auth/presentation/controllers/auth_state.dart';
+import 'package:probon_app/features/gamification/presentation/controllers/gamification_controller.dart';
 
 class ProfileTab extends ConsumerWidget {
   const ProfileTab({super.key});
@@ -50,6 +51,7 @@ class ProfileTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authNotifierProvider);
     final user = authState.user;
+    final gamificationState = ref.watch(gamificationNotifierProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -167,6 +169,58 @@ class ProfileTab extends ConsumerWidget {
                 onTap: () => context.push('/arena'),
               ),
             ),
+            if (gamificationState.achievements.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Earned Badges',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                          ),
+                          Text(
+                            '${gamificationState.achievements.length} Unlocked',
+                            style: const TextStyle(fontSize: 12, color: Color(0xFFFBBF24), fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: gamificationState.achievements.map((a) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceElevated,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: AppTheme.border),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(a.badgeIcon, style: const TextStyle(fontSize: 16)),
+                                const SizedBox(width: 6),
+                                Text(
+                                  a.title,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
 
             // Profile Details List

@@ -8,6 +8,7 @@ import '../../features/chat/presentation/screens/project_chat_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/gamification/presentation/screens/weekly_arena_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../features/projects/presentation/screens/explore_projects_screen.dart';
 import '../../features/projects/presentation/screens/project_command_center_screen.dart';
 
 class RouterNotifier extends ChangeNotifier {
@@ -94,6 +95,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/arena',
         builder: (context, state) => const WeeklyArenaScreen(),
+      ),
+      GoRoute(
+        path: '/explore',
+        builder: (context, state) => const ExploreProjectsScreen(),
       ),
       GoRoute(
         path: '/notifications',

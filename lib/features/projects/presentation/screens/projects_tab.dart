@@ -22,6 +22,11 @@ class ProjectsTab extends ConsumerWidget {
         title: const Text('Projects'),
         actions: [
           IconButton(
+            icon: const Icon(LucideIcons.search, size: 20),
+            tooltip: 'Explore & Search Capstones',
+            onPressed: () => context.push('/explore'),
+          ),
+          IconButton(
             icon: const Icon(LucideIcons.folderPlus, size: 20),
             tooltip: 'New Project',
             onPressed: () => CreateProjectBottomSheet.show(context),

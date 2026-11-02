@@ -6,6 +6,7 @@ import '../models/project_model.dart';
 
 abstract class IProjectsRepository {
   Future<List<ProjectModel>> getUserProjects();
+  Future<List<ProjectModel>> searchProjects({String? query, String? status});
   Future<ProjectModel> getProjectById(int projectId);
   Future<ProjectModel> createProject({
     required String name,
@@ -50,6 +51,25 @@ class ProjectsRepository implements IProjectsRepository {
           return list.map((item) => ProjectModel.fromJson(item as Map<String, dynamic>)).toList();
         }
       } catch (_) {}
+      return [];
+    }
+  }
+
+  @override
+  Future<List<ProjectModel>> searchProjects({String? query, String? status}) async {
+    final params = <String, dynamic>{};
+    if (query != null && query.trim().isNotEmpty) params['search'] = query.trim();
+    if (status != null && status.isNotEmpty) params['status'] = status;
+
+    try {
+      final response = await apiClient.get('/projects', queryParameters: params.isEmpty ? null : params);
+      final data = response.data;
+      if (data is Map<String, dynamic> && data['data'] != null) {
+        final list = data['data'] as List;
+        return list.map((item) => ProjectModel.fromJson(item as Map<String, dynamic>)).toList();
+      }
+      return [];
+    } catch (_) {
       return [];
     }
   }
