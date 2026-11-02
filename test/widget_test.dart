@@ -19,7 +19,7 @@ class TestTokenStorage implements ITokenStorage {
 }
 
 void main() {
-  testWidgets('ProbonApp initial launch renders Splash screen branding', (WidgetTester tester) async {
+  testWidgets('ProbonApp initial launch renders Login screen for unauthenticated users', (WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -29,11 +29,13 @@ void main() {
       ),
     );
 
-    // Initial frame should render Probon branding and subtitle
-    expect(find.text('Probon'), findsOneWidget);
-    expect(find.text('Collaborative Learning & Project Platform'), findsOneWidget);
+    // Initial frame should render Welcome Back header, email, password, and sign in
+    expect(find.text('Welcome Back'), findsOneWidget);
+    expect(find.text('Email Address'), findsOneWidget);
+    expect(find.text('Password'), findsOneWidget);
+    expect(find.text('Sign In'), findsOneWidget);
+    expect(find.text('Create Account'), findsOneWidget);
 
-    // Pump one frame to advance post-frame callback
     await tester.pump(const Duration(milliseconds: 100));
   });
 }
