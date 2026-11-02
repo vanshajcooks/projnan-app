@@ -15,6 +15,7 @@ class AppTheme {
   static const Color textSecondary = Color(0xFF9CA3AF);
   static const Color border = Color(0xFF262838);
   static const Color error = Color(0xFFEF4444);
+  static const Color warning = Color(0xFFFBBF24);
   static const Color success = Color(0xFF10B981);
 
   static ThemeData get darkTheme {

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:probon_app/core/theme/app_theme.dart';
 import 'package:probon_app/features/projects/presentation/controllers/projects_controller.dart';
+import 'package:probon_app/features/projects/presentation/widgets/create_project_bottom_sheet.dart';
 import 'package:probon_app/features/projects/presentation/widgets/project_card.dart';
 import 'package:probon_app/features/projects/presentation/widgets/project_card_skeleton.dart';
 import 'package:probon_app/features/projects/presentation/widgets/project_detail_bottom_sheet.dart';
@@ -19,6 +20,13 @@ class ProjectsTab extends ConsumerWidget {
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('Projects'),
+        actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.folderPlus, size: 20),
+            tooltip: 'New Project',
+            onPressed: () => CreateProjectBottomSheet.show(context),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -120,6 +128,12 @@ class ProjectsTab extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => CreateProjectBottomSheet.show(context),
+        backgroundColor: AppTheme.primary,
+        icon: const Icon(LucideIcons.plus, size: 18, color: Colors.white),
+        label: const Text('New Project', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );
   }

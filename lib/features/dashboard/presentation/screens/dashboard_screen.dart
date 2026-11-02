@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:probon_app/core/theme/app_theme.dart';
+import 'package:probon_app/features/classes/presentation/controllers/classes_controller.dart';
 import 'package:probon_app/features/projects/presentation/controllers/projects_controller.dart';
 import 'package:probon_app/features/projects/presentation/screens/projects_tab.dart';
 import 'package:probon_app/features/tasks/presentation/controllers/tasks_controller.dart';
@@ -27,6 +28,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(projectsNotifierProvider.notifier).fetchProjects();
       ref.read(tasksNotifierProvider.notifier).fetchTasks();
+      ref.read(classesNotifierProvider.notifier).fetchClassesAndTeams();
     });
   }
 

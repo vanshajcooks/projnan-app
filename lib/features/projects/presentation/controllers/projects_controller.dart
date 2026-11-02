@@ -65,6 +65,32 @@ class ProjectsNotifier extends Notifier<ProjectsState> {
   void setFilter(String filter) {
     state = state.copyWith(selectedFilter: filter);
   }
+
+  Future<bool> createProject({
+    required String name,
+    required String description,
+    int? teamId,
+    int? classId,
+    List<String>? tags,
+    List<String>? goals,
+  }) async {
+    try {
+      final repository = ref.read(projectsRepositoryProvider);
+      await repository.createProject(
+        name: name,
+        description: description,
+        teamId: teamId,
+        classId: classId,
+        tags: tags,
+        goals: goals,
+      );
+      await fetchProjects();
+      return true;
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
+      return false;
+    }
+  }
 }
 
 final projectsNotifierProvider = NotifierProvider<ProjectsNotifier, ProjectsState>(() {

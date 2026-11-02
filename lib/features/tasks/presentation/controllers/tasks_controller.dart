@@ -84,6 +84,32 @@ class TasksNotifier extends Notifier<TasksState> {
       return false;
     }
   }
+
+  Future<bool> createTask({
+    required int projectId,
+    required String title,
+    String? description,
+    String priority = 'medium',
+    String taskType = 'weekly',
+    int xpValue = 50,
+  }) async {
+    try {
+      final repository = ref.read(tasksRepositoryProvider);
+      await repository.createTask(
+        projectId: projectId,
+        title: title,
+        description: description,
+        priority: priority,
+        taskType: taskType,
+        xpValue: xpValue,
+      );
+      await fetchTasks();
+      return true;
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
+      return false;
+    }
+  }
 }
 
 final tasksNotifierProvider = NotifierProvider<TasksNotifier, TasksState>(() {

@@ -4,8 +4,14 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:probon_app/core/theme/app_theme.dart';
 import 'package:probon_app/core/utils/app_notifications.dart';
 import 'package:probon_app/features/auth/presentation/controllers/auth_state.dart';
+import 'package:probon_app/features/classes/presentation/controllers/classes_controller.dart';
+import 'package:probon_app/features/classes/presentation/widgets/create_class_dialog.dart';
+import 'package:probon_app/features/classes/presentation/widgets/create_team_dialog.dart';
+import 'package:probon_app/features/classes/presentation/widgets/join_class_dialog.dart';
 import 'package:probon_app/features/projects/presentation/controllers/projects_controller.dart';
+import 'package:probon_app/features/projects/presentation/widgets/create_project_bottom_sheet.dart';
 import 'package:probon_app/features/tasks/presentation/controllers/tasks_controller.dart';
+import 'package:probon_app/features/tasks/presentation/widgets/create_task_bottom_sheet.dart';
 import 'package:probon_app/features/tasks/presentation/widgets/task_card.dart';
 import 'package:probon_app/features/tasks/presentation/widgets/task_detail_bottom_sheet.dart';
 
@@ -32,6 +38,7 @@ class DashboardTab extends ConsumerWidget {
         await Future.wait([
           ref.read(projectsNotifierProvider.notifier).fetchProjects(),
           ref.read(tasksNotifierProvider.notifier).fetchTasks(),
+          ref.read(classesNotifierProvider.notifier).fetchClassesAndTeams(),
           ref.read(authNotifierProvider.notifier).checkAuthStatus(),
         ]);
       },
@@ -136,7 +143,48 @@ class DashboardTab extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
+
+            // Quick Actions Hub
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildQuickActionButton(
+                    icon: LucideIcons.folderPlus,
+                    label: 'New Project',
+                    onTap: () => CreateProjectBottomSheet.show(context),
+                  ),
+                  const SizedBox(width: 8),
+                  _buildQuickActionButton(
+                    icon: LucideIcons.plusSquare,
+                    label: 'New Task',
+                    onTap: () => CreateTaskBottomSheet.show(context),
+                  ),
+                  const SizedBox(width: 8),
+                  _buildQuickActionButton(
+                    icon: LucideIcons.graduationCap,
+                    label: 'Join Class',
+                    onTap: () => JoinClassDialog.show(context),
+                  ),
+                  if (user?.role.toLowerCase() == 'teacher') ...[
+                    const SizedBox(width: 8),
+                    _buildQuickActionButton(
+                      icon: LucideIcons.bookPlus,
+                      label: 'Create Class',
+                      onTap: () => CreateClassDialog.show(context),
+                    ),
+                    const SizedBox(width: 8),
+                    _buildQuickActionButton(
+                      icon: LucideIcons.users,
+                      label: 'Create Team',
+                      onTap: () => CreateTeamDialog.show(context),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
 
             // Overview Metric Tiles
             Row(
@@ -243,6 +291,40 @@ class DashboardTab extends ConsumerWidget {
                       },
                     ),
                   ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 15, color: AppTheme.primaryLight),
+            const SizedBox(width: 7),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textPrimary,
+              ),
+            ),
           ],
         ),
       ),

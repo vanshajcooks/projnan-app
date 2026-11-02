@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:probon_app/core/theme/app_theme.dart';
 import 'package:probon_app/core/utils/app_notifications.dart';
 import 'package:probon_app/features/tasks/presentation/controllers/tasks_controller.dart';
+import 'package:probon_app/features/tasks/presentation/widgets/create_task_bottom_sheet.dart';
 import 'package:probon_app/features/tasks/presentation/widgets/task_card.dart';
 import 'package:probon_app/features/tasks/presentation/widgets/task_card_skeleton.dart';
 import 'package:probon_app/features/tasks/presentation/widgets/task_detail_bottom_sheet.dart';
@@ -20,6 +21,13 @@ class TasksTab extends ConsumerWidget {
       backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('Tasks'),
+        actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.plusSquare, size: 20),
+            tooltip: 'New Task',
+            onPressed: () => CreateTaskBottomSheet.show(context),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -136,6 +144,12 @@ class TasksTab extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => CreateTaskBottomSheet.show(context),
+        backgroundColor: AppTheme.primary,
+        icon: const Icon(LucideIcons.plus, size: 18, color: Colors.white),
+        label: const Text('New Task', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );
   }
