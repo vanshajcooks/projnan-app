@@ -10,22 +10,34 @@ import 'tabs/dashboard_tab.dart';
 import 'tabs/profile_tab.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
-  const DashboardScreen({super.key});
+  final int initialTab;
+  const DashboardScreen({super.key, this.initialTab = 0});
 
   @override
   ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  int _currentIndex = 0;
+  late int _currentIndex;
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialTab.clamp(0, 3);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(projectsNotifierProvider.notifier).fetchProjects();
       ref.read(tasksNotifierProvider.notifier).fetchTasks();
     });
+  }
+
+  @override
+  void didUpdateWidget(DashboardScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialTab != widget.initialTab) {
+      setState(() {
+        _currentIndex = widget.initialTab.clamp(0, 3);
+      });
+    }
   }
 
   void _onTabTapped(int index) {

@@ -151,5 +151,24 @@ void main() {
       expect(find.text('aryan@example.com'), findsOneWidget);
       expect(find.text('Sign Out'), findsOneWidget);
     });
+
+    testWidgets('respects initialTab parameter', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authNotifierProvider.overrideWith(() => FakeAuthNotifier(testUser)),
+            projectsRepositoryProvider.overrideWithValue(mockProjects),
+            tasksRepositoryProvider.overrideWithValue(mockTasks),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.darkTheme,
+            home: const DashboardScreen(initialTab: 2),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Build UI Component'), findsOneWidget);
+    });
   });
 }

@@ -48,6 +48,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: notifier.redirect,
     routes: [
       GoRoute(
+        path: '/',
+        redirect: (context, state) => '/dashboard',
+      ),
+      GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
@@ -57,7 +61,23 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/dashboard',
-        builder: (context, state) => const DashboardScreen(),
+        builder: (context, state) {
+          final tabParam = state.uri.queryParameters['tab'];
+          final tabIndex = int.tryParse(tabParam ?? '') ?? 0;
+          return DashboardScreen(initialTab: tabIndex);
+        },
+      ),
+      GoRoute(
+        path: '/projects',
+        redirect: (context, state) => '/dashboard?tab=1',
+      ),
+      GoRoute(
+        path: '/tasks',
+        redirect: (context, state) => '/dashboard?tab=2',
+      ),
+      GoRoute(
+        path: '/profile',
+        redirect: (context, state) => '/dashboard?tab=3',
       ),
     ],
   );
