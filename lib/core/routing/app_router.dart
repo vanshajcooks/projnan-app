@@ -5,6 +5,7 @@ import '../../features/auth/presentation/controllers/auth_state.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../features/gamification/presentation/screens/weekly_arena_screen.dart';
 import '../../features/projects/presentation/screens/project_command_center_screen.dart';
 
 class RouterNotifier extends ChangeNotifier {
@@ -87,6 +88,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile',
         redirect: (context, state) => '/dashboard?tab=3',
+      ),
+      GoRoute(
+        path: '/arena',
+        builder: (context, state) => const WeeklyArenaScreen(),
       ),
     ],
   );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:probon_app/core/theme/app_theme.dart';
 import 'package:probon_app/core/utils/app_notifications.dart';
@@ -166,6 +167,12 @@ class DashboardTab extends ConsumerWidget {
                     icon: LucideIcons.graduationCap,
                     label: 'Join Class',
                     onTap: () => JoinClassDialog.show(context),
+                  ),
+                  const SizedBox(width: 8),
+                  _buildQuickActionButton(
+                    icon: LucideIcons.swords,
+                    label: 'Weekly Arena',
+                    onTap: () => context.push('/arena'),
                   ),
                   if (user?.role.toLowerCase() == 'teacher') ...[
                     const SizedBox(width: 8),

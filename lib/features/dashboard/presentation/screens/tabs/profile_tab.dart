@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:probon_app/core/theme/app_theme.dart';
 import 'package:probon_app/features/auth/presentation/controllers/auth_state.dart';
@@ -146,6 +147,25 @@ class ProfileTab extends ConsumerWidget {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+
+            // Arena & Leaderboard Shortcut Banner
+            Card(
+              child: ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFBBF24).withAlpha(35),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(LucideIcons.swords, color: Color(0xFFFBBF24), size: 20),
+                ),
+                title: const Text('Weekly Arena & Badges', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                subtitle: const Text('Climb leaderboard & earn XP rewards', style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                trailing: const Icon(LucideIcons.chevronRight, size: 18, color: AppTheme.textSecondary),
+                onTap: () => context.push('/arena'),
+              ),
             ),
             const SizedBox(height: 16),
 
