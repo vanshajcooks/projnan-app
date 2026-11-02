@@ -1,0 +1,113 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:probon_app/core/theme/app_theme.dart';
+import 'package:probon_app/features/projects/presentation/controllers/projects_controller.dart';
+import 'package:probon_app/features/projects/presentation/widgets/project_card.dart';
+
+class ProjectsTab extends ConsumerWidget {
+  const ProjectsTab({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final projectsState = ref.watch(projectsNotifierProvider);
+    final projects = projectsState.filteredProjects;
+
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        title: const Text('Projects'),
+      ),
+      body: Column(
+        children: [
+          // Filter Chips
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+            child: Row(
+              children: ['All', 'Active', 'Completed'].map((filter) {
+                final isSelected = projectsState.selectedFilter == filter;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: ChoiceChip(
+                    label: Text(filter),
+                    selected: isSelected,
+                    showCheckmark: false,
+                    onSelected: (_) {
+                      ref.read(projectsNotifierProvider.notifier).setFilter(filter);
+                    },
+                    selectedColor: AppTheme.primary,
+                    backgroundColor: AppTheme.surface,
+                    labelStyle: TextStyle(
+                      fontSize: 12,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      color: isSelected ? Colors.white : AppTheme.textSecondary,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(
+                        color: isSelected ? AppTheme.primary : AppTheme.border,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+
+          // Project List
+          Expanded(
+            child: RefreshIndicator(
+              color: AppTheme.primary,
+              backgroundColor: AppTheme.surface,
+              onRefresh: () async {
+                await ref.read(projectsNotifierProvider.notifier).fetchProjects();
+              },
+              child: projectsState.isLoading
+                  ? const Center(child: CircularProgressIndicator(strokeWidth: 2.5))
+                  : projects.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            const SizedBox(height: 80),
+                            Center(
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    LucideIcons.folderX,
+                                    size: 48,
+                                    color: AppTheme.textSecondary.withAlpha(100),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  const Text(
+                                    'No projects found',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Collaborative projects will appear here',
+                                    style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                          itemCount: projects.length,
+                          itemBuilder: (context, index) {
+                            return ProjectCard(project: projects[index]);
+                          },
+                        ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

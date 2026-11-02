@@ -1,72 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../../auth/presentation/controllers/auth_state.dart';
+import 'package:probon_app/core/theme/app_theme.dart';
+import 'package:probon_app/features/projects/presentation/controllers/projects_controller.dart';
+import 'package:probon_app/features/projects/presentation/screens/projects_tab.dart';
+import 'package:probon_app/features/tasks/presentation/controllers/tasks_controller.dart';
+import 'package:probon_app/features/tasks/presentation/screens/tasks_tab.dart';
+import 'tabs/dashboard_tab.dart';
+import 'tabs/profile_tab.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authNotifierProvider);
-    final user = authState.user;
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(projectsNotifierProvider.notifier).fetchProjects();
+      ref.read(tasksNotifierProvider.notifier).fetchTasks();
+    });
+  }
+
+  void _onTabTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tabs = [
+      DashboardTab(onNavigateToTab: _onTabTapped),
+      const ProjectsTab(),
+      const TasksTab(),
+      const ProfileTab(),
+    ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Probon Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.logOut, size: 20),
-            tooltip: 'Sign Out',
-            onPressed: () {
-              ref.read(authNotifierProvider.notifier).logout();
-            },
-          ),
-        ],
+      backgroundColor: AppTheme.background,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: tabs,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: AppTheme.primary.withAlpha(50),
-                      child: const Icon(LucideIcons.user, color: AppTheme.primary, size: 28),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user?.name ?? 'Welcome Student',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            user?.email ?? 'Probon Platform',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppTheme.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: AppTheme.surface,
+          border: Border(
+            top: BorderSide(color: AppTheme.border, width: 1),
+          ),
+        ),
+        child: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: _onTabTapped,
+          backgroundColor: AppTheme.surface,
+          indicatorColor: AppTheme.primary.withAlpha(45),
+          elevation: 0,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(LucideIcons.layoutDashboard, size: 20),
+              selectedIcon: Icon(LucideIcons.layoutDashboard, size: 20, color: AppTheme.primaryLight),
+              label: 'Overview',
+            ),
+            NavigationDestination(
+              icon: Icon(LucideIcons.folder, size: 20),
+              selectedIcon: Icon(LucideIcons.folder, size: 20, color: AppTheme.primaryLight),
+              label: 'Projects',
+            ),
+            NavigationDestination(
+              icon: Icon(LucideIcons.checkSquare, size: 20),
+              selectedIcon: Icon(LucideIcons.checkSquare, size: 20, color: AppTheme.primaryLight),
+              label: 'Tasks',
+            ),
+            NavigationDestination(
+              icon: Icon(LucideIcons.user, size: 20),
+              selectedIcon: Icon(LucideIcons.user, size: 20, color: AppTheme.primaryLight),
+              label: 'Profile',
             ),
           ],
         ),
