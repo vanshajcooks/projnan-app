@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:probon_app/core/theme/app_theme.dart';
+import 'package:probon_app/core/utils/app_notifications.dart';
 import 'package:probon_app/features/auth/presentation/controllers/auth_state.dart';
 import 'package:probon_app/features/projects/presentation/controllers/projects_controller.dart';
 import 'package:probon_app/features/tasks/presentation/controllers/tasks_controller.dart';
 import 'package:probon_app/features/tasks/presentation/widgets/task_card.dart';
+import 'package:probon_app/features/tasks/presentation/widgets/task_detail_bottom_sheet.dart';
 
 class DashboardTab extends ConsumerWidget {
   final void Function(int tabIndex)? onNavigateToTab;
@@ -222,8 +224,22 @@ class DashboardTab extends ConsumerWidget {
               ...tasksState.tasks.take(4).map(
                     (task) => TaskCard(
                       task: task,
-                      onStatusChange: (newStatus) {
-                        ref.read(tasksNotifierProvider.notifier).updateStatus(task.id, newStatus);
+                      onTap: () {
+                        TaskDetailBottomSheet.show(
+                          context,
+                          task: task,
+                          onStatusChange: (tId, newStatus) {
+                            return ref.read(tasksNotifierProvider.notifier).updateStatus(tId, newStatus);
+                          },
+                        );
+                      },
+                      onStatusChange: (newStatus) async {
+                        final success = await ref
+                            .read(tasksNotifierProvider.notifier)
+                            .updateStatus(task.id, newStatus);
+                        if (success && context.mounted) {
+                          AppToast.showSuccess(context, 'Task status updated to $newStatus');
+                        }
                       },
                     ),
                   ),

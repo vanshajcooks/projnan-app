@@ -4,6 +4,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:probon_app/core/theme/app_theme.dart';
 import 'package:probon_app/features/projects/presentation/controllers/projects_controller.dart';
 import 'package:probon_app/features/projects/presentation/widgets/project_card.dart';
+import 'package:probon_app/features/projects/presentation/widgets/project_card_skeleton.dart';
+import 'package:probon_app/features/projects/presentation/widgets/project_detail_bottom_sheet.dart';
 
 class ProjectsTab extends ConsumerWidget {
   const ProjectsTab({super.key});
@@ -54,7 +56,7 @@ class ProjectsTab extends ConsumerWidget {
             ),
           ),
 
-          // Project List
+          // Project List with Skeletons
           Expanded(
             child: RefreshIndicator(
               color: AppTheme.primary,
@@ -63,7 +65,12 @@ class ProjectsTab extends ConsumerWidget {
                 await ref.read(projectsNotifierProvider.notifier).fetchProjects();
               },
               child: projectsState.isLoading
-                  ? const Center(child: CircularProgressIndicator(strokeWidth: 2.5))
+                  ? ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                      itemCount: 4,
+                      itemBuilder: (_, __) => const ProjectCardSkeleton(),
+                    )
                   : projects.isEmpty
                       ? ListView(
                           physics: const AlwaysScrollableScrollPhysics(),
@@ -101,7 +108,13 @@ class ProjectsTab extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
                           itemCount: projects.length,
                           itemBuilder: (context, index) {
-                            return ProjectCard(project: projects[index]);
+                            final project = projects[index];
+                            return ProjectCard(
+                              project: project,
+                              onTap: () {
+                                ProjectDetailBottomSheet.show(context, project);
+                              },
+                            );
                           },
                         ),
             ),

@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:probon_app/core/theme/app_theme.dart';
+import 'package:probon_app/core/utils/app_notifications.dart';
 import 'package:probon_app/features/tasks/presentation/controllers/tasks_controller.dart';
 import 'package:probon_app/features/tasks/presentation/widgets/task_card.dart';
+import 'package:probon_app/features/tasks/presentation/widgets/task_card_skeleton.dart';
+import 'package:probon_app/features/tasks/presentation/widgets/task_detail_bottom_sheet.dart';
 
 class TasksTab extends ConsumerWidget {
   const TasksTab({super.key});
@@ -55,7 +58,7 @@ class TasksTab extends ConsumerWidget {
             ),
           ),
 
-          // Task List
+          // Task List with Skeletons
           Expanded(
             child: RefreshIndicator(
               color: AppTheme.primary,
@@ -64,7 +67,12 @@ class TasksTab extends ConsumerWidget {
                 await ref.read(tasksNotifierProvider.notifier).fetchTasks();
               },
               child: tasksState.isLoading
-                  ? const Center(child: CircularProgressIndicator(strokeWidth: 2.5))
+                  ? ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                      itemCount: 4,
+                      itemBuilder: (_, __) => const TaskCardSkeleton(),
+                    )
                   : tasks.isEmpty
                       ? ListView(
                           physics: const AlwaysScrollableScrollPhysics(),
@@ -105,8 +113,22 @@ class TasksTab extends ConsumerWidget {
                             final task = tasks[index];
                             return TaskCard(
                               task: task,
-                              onStatusChange: (newStatus) {
-                                ref.read(tasksNotifierProvider.notifier).updateStatus(task.id, newStatus);
+                              onTap: () {
+                                TaskDetailBottomSheet.show(
+                                  context,
+                                  task: task,
+                                  onStatusChange: (tId, newStatus) {
+                                    return ref.read(tasksNotifierProvider.notifier).updateStatus(tId, newStatus);
+                                  },
+                                );
+                              },
+                              onStatusChange: (newStatus) async {
+                                final success = await ref
+                                    .read(tasksNotifierProvider.notifier)
+                                    .updateStatus(task.id, newStatus);
+                                if (success && context.mounted) {
+                                  AppToast.showSuccess(context, 'Task status updated to $newStatus');
+                                }
                               },
                             );
                           },
