@@ -14,7 +14,8 @@ class TaskModel {
   final String taskType; // 'daily', 'weekly', 'monthly'
   final String status; // 'Planned', 'In Progress', 'Verification Pending', 'Completed'
   final int xpValue;
-  final String? verificationStatus;
+  final String? verificationStatus; // 'pending', 'verified', 'rejected'
+  final String? completionEvidence;
 
   const TaskModel({
     required this.id,
@@ -33,11 +34,15 @@ class TaskModel {
     this.status = 'Planned',
     this.xpValue = 50,
     this.verificationStatus,
+    this.completionEvidence,
   });
 
   bool get isCompleted => status.toLowerCase() == 'completed';
   bool get isInProgress => status.toLowerCase() == 'in progress';
   bool get isPendingVerification => status.toLowerCase() == 'verification pending';
+  bool get isVerified => verificationStatus?.toLowerCase() == 'verified';
+  bool get isRejected => verificationStatus?.toLowerCase() == 'rejected';
+  bool get hasEvidence => completionEvidence != null && completionEvidence!.trim().isNotEmpty;
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
     return TaskModel(
@@ -61,6 +66,7 @@ class TaskModel {
           ? json['xp_value'] as int
           : (int.tryParse(json['xp_value']?.toString() ?? '50') ?? 50),
       verificationStatus: json['verification_status'] as String?,
+      completionEvidence: json['completion_evidence'] as String?,
     );
   }
 
@@ -82,6 +88,7 @@ class TaskModel {
       'status': status,
       'xp_value': xpValue,
       'verification_status': verificationStatus,
+      'completion_evidence': completionEvidence,
     };
   }
 
@@ -102,6 +109,7 @@ class TaskModel {
     String? status,
     int? xpValue,
     String? verificationStatus,
+    String? completionEvidence,
   }) {
     return TaskModel(
       id: id ?? this.id,
@@ -120,6 +128,7 @@ class TaskModel {
       status: status ?? this.status,
       xpValue: xpValue ?? this.xpValue,
       verificationStatus: verificationStatus ?? this.verificationStatus,
+      completionEvidence: completionEvidence ?? this.completionEvidence,
     );
   }
 }

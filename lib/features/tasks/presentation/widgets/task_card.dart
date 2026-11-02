@@ -62,22 +62,99 @@ class TaskCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: priorityColor.withAlpha(30),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: priorityColor.withAlpha(90)),
-                    ),
-                    child: Text(
-                      task.priority.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: priorityColor,
-                        letterSpacing: 0.5,
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: priorityColor.withAlpha(30),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: priorityColor.withAlpha(90)),
+                        ),
+                        child: Text(
+                          task.priority.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: priorityColor,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
                       ),
-                    ),
+                      if (task.isPendingVerification) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFBBF24).withAlpha(35),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(LucideIcons.shieldAlert, size: 11, color: Color(0xFFFBBF24)),
+                              SizedBox(width: 3),
+                              Text(
+                                'Pending Review',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFFBBF24),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else if (task.isVerified) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppTheme.success.withAlpha(35),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(LucideIcons.shieldCheck, size: 11, color: AppTheme.success),
+                              SizedBox(width: 3),
+                              Text(
+                                'Verified',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.success,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else if (task.isRejected) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppTheme.error.withAlpha(35),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(LucideIcons.alertTriangle, size: 11, color: AppTheme.error),
+                              SizedBox(width: 3),
+                              Text(
+                                'Revision Needed',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.error,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -126,6 +203,34 @@ class TaskCard extends StatelessWidget {
                     fontSize: 13,
                     color: AppTheme.textSecondary,
                     height: 1.3,
+                  ),
+                ),
+              ],
+
+              // Attached Evidence preview if present
+              if (task.hasEvidence) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: AppTheme.border),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(LucideIcons.link2, size: 12, color: AppTheme.primaryLight),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          task.completionEvidence!,
+                          style: const TextStyle(fontSize: 11, color: AppTheme.primaryLight),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

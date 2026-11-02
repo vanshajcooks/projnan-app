@@ -9,11 +9,24 @@ import 'package:probon_app/features/tasks/presentation/widgets/task_card.dart';
 import 'package:probon_app/features/tasks/presentation/widgets/task_card_skeleton.dart';
 import 'package:probon_app/features/tasks/presentation/widgets/task_detail_bottom_sheet.dart';
 
-class TasksTab extends ConsumerWidget {
+class TasksTab extends ConsumerStatefulWidget {
   const TasksTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TasksTab> createState() => _TasksTabState();
+}
+
+class _TasksTabState extends ConsumerState<TasksTab> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(tasksNotifierProvider.notifier).fetchTasks();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final tasksState = ref.watch(tasksNotifierProvider);
     final tasks = tasksState.filteredTasks;
 
@@ -31,12 +44,72 @@ class TasksTab extends ConsumerWidget {
       ),
       body: Column(
         children: [
+          // Scope Toggle: My Tasks vs All Team Tasks
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 4),
+            child: Container(
+              height: 42,
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceElevated,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.border),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => ref.read(tasksNotifierProvider.notifier).toggleScope(true),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: tasksState.showOnlyMyTasks ? AppTheme.primary : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'My Tasks',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: tasksState.showOnlyMyTasks ? Colors.white : AppTheme.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => ref.read(tasksNotifierProvider.notifier).toggleScope(false),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: !tasksState.showOnlyMyTasks ? AppTheme.primary : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'All Team Tasks',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: !tasksState.showOnlyMyTasks ? Colors.white : AppTheme.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
           // Filter Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
             child: Row(
-              children: ['All', 'Planned', 'In Progress', 'Completed'].map((filter) {
+              children: ['All', 'Planned', 'In Progress', 'Verification Pending', 'Completed'].map((filter) {
                 final isSelected = tasksState.selectedFilter == filter;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
@@ -95,18 +168,20 @@ class TasksTab extends ConsumerWidget {
                                     color: AppTheme.textSecondary.withAlpha(100),
                                   ),
                                   const SizedBox(height: 14),
-                                  const Text(
-                                    'No tasks found',
-                                    style: TextStyle(
+                                  Text(
+                                    tasksState.showOnlyMyTasks ? 'No tasks assigned to you' : 'No tasks found',
+                                    style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w600,
                                       color: AppTheme.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  const Text(
-                                    'Tasks assigned to you will be listed here',
-                                    style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+                                  Text(
+                                    tasksState.showOnlyMyTasks
+                                        ? 'Collaborative deliverables will appear here'
+                                        : 'Create a task or change the filter',
+                                    style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
                                   ),
                                 ],
                               ),
