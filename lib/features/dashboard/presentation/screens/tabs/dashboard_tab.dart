@@ -9,6 +9,7 @@ import 'package:probon_app/features/classes/presentation/controllers/classes_con
 import 'package:probon_app/features/classes/presentation/widgets/create_class_dialog.dart';
 import 'package:probon_app/features/classes/presentation/widgets/create_team_dialog.dart';
 import 'package:probon_app/features/classes/presentation/widgets/join_class_dialog.dart';
+import 'package:probon_app/features/notifications/presentation/controllers/notifications_controller.dart';
 import 'package:probon_app/features/projects/presentation/controllers/projects_controller.dart';
 import 'package:probon_app/features/projects/presentation/widgets/create_project_bottom_sheet.dart';
 import 'package:probon_app/features/tasks/presentation/controllers/tasks_controller.dart';
@@ -32,6 +33,9 @@ class DashboardTab extends ConsumerWidget {
     final pendingTasks = tasksState.pendingCount;
     final completedTasks = tasksState.completedCount;
 
+    final notifsState = ref.watch(notificationsNotifierProvider);
+    final unreadCount = notifsState.unreadCount;
+
     return RefreshIndicator(
       color: AppTheme.primary,
       backgroundColor: AppTheme.surface,
@@ -49,6 +53,49 @@ class DashboardTab extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Top Bar with Brand & Notifications
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Probon',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    IconButton(
+                      icon: const Icon(LucideIcons.bell, size: 20),
+                      tooltip: 'Notifications',
+                      onPressed: () => context.push('/notifications'),
+                    ),
+                    if (unreadCount > 0)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: AppTheme.error,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '$unreadCount',
+                            style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
             // User Greeting Card
             Card(
               child: Padding(

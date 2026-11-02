@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/app_notifications.dart';
@@ -74,6 +75,13 @@ class _ProjectCommandCenterScreenState extends ConsumerState<ProjectCommandCente
               tooltip: 'Sync GitHub Telemetry',
               onPressed: _handleSync,
             ),
+          IconButton(
+            icon: const Icon(LucideIcons.messageSquare, size: 20),
+            tooltip: 'Team Chat',
+            onPressed: () {
+              context.push('/projects/${widget.projectId}/chat?name=${Uri.encodeComponent(project?.name ?? 'Project')}');
+            },
+          ),
           PopupMenuButton<String>(
             icon: const Icon(LucideIcons.moreVertical, size: 20),
             color: AppTheme.surfaceElevated,
