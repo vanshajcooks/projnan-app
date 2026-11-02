@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/app_notifications.dart';
@@ -183,6 +184,23 @@ class _ForgotPasswordDialogState extends ConsumerState<ForgotPasswordDialog> {
               ),
             ],
           ),
+          const SizedBox(height: 14),
+          Center(
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).pop();
+                context.push('/reset-password');
+              },
+              child: const Text(
+                'Already have a reset token? Enter it here',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.primaryLight,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -221,8 +239,16 @@ class _ForgotPasswordDialogState extends ConsumerState<ForgotPasswordDialog> {
         ),
         const SizedBox(height: 24),
         ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            context.push('/reset-password');
+          },
+          child: const Text('Enter Reset Token & Set Password'),
+        ),
+        const SizedBox(height: 10),
+        TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Back to Login'),
+          child: const Text('Back to Login', style: TextStyle(color: AppTheme.textSecondary)),
         ),
       ],
     );

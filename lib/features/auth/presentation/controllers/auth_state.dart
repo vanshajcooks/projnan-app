@@ -168,6 +168,14 @@ class AuthNotifier extends Notifier<AuthState> {
     final repository = ref.read(authRepositoryProvider);
     return await repository.resendVerification();
   }
+
+  Future<Map<String, dynamic>> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    final repository = ref.read(authRepositoryProvider);
+    return await repository.resetPassword(token: token, newPassword: newPassword);
+  }
 }
 
 final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(() {

@@ -10,6 +10,7 @@ import '../controllers/project_detail_controller.dart';
 import '../widgets/add_feedback_dialog.dart';
 import '../widgets/add_milestone_dialog.dart';
 import '../widgets/connect_repo_dialog.dart';
+import '../widgets/edit_project_dialog.dart';
 
 class ProjectCommandCenterScreen extends ConsumerStatefulWidget {
   final int projectId;
@@ -91,12 +92,23 @@ class _ProjectCommandCenterScreenState extends ConsumerState<ProjectCommandCente
               side: const BorderSide(color: AppTheme.border),
             ),
             onSelected: (val) {
+              if (val == 'edit' && project != null) EditProjectDialog.show(context, project);
               if (val == 'repo') ConnectRepoDialog.show(context, widget.projectId);
               if (val == 'milestone') AddMilestoneDialog.show(context, widget.projectId);
               if (val == 'review') AddFeedbackDialog.show(context, widget.projectId);
               if (val == 'task') CreateTaskBottomSheet.show(context, projectId: widget.projectId);
             },
             itemBuilder: (ctx) => [
+              const PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(LucideIcons.settings, size: 16, color: AppTheme.primaryLight),
+                    SizedBox(width: 10),
+                    Text('Edit Project Details', style: TextStyle(fontSize: 13)),
+                  ],
+                ),
+              ),
               const PopupMenuItem(
                 value: 'task',
                 child: Row(
@@ -445,19 +457,35 @@ class _ProjectCommandCenterScreenState extends ConsumerState<ProjectCommandCente
                     children: [
                       Row(
                         children: [
-                          Icon(
-                            m.isCompleted ? LucideIcons.checkCircle : LucideIcons.circleDashed,
-                            size: 18,
-                            color: m.isCompleted ? AppTheme.success : const Color(0xFFFBBF24),
+                          InkWell(
+                            onTap: () async {
+                              final success = await ref
+                                  .read(projectDetailNotifierProvider(widget.projectId).notifier)
+                                  .toggleMilestone(m.id, !m.isCompleted);
+                              if (mounted && success) {
+                                AppToast.showSuccess(
+                                  context,
+                                  m.isCompleted
+                                      ? 'Milestone reopened'
+                                      : 'Milestone completed! +${m.xpReward} XP awarded to team!',
+                                );
+                              }
+                            },
+                            child: Icon(
+                              m.isCompleted ? LucideIcons.checkCircle : LucideIcons.circleDashed,
+                              size: 20,
+                              color: m.isCompleted ? AppTheme.success : const Color(0xFFFBBF24),
+                            ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               m.title,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimary,
+                                color: m.isCompleted ? AppTheme.textSecondary : AppTheme.textPrimary,
+                                decoration: m.isCompleted ? TextDecoration.lineThrough : null,
                               ),
                             ),
                           ),
@@ -483,6 +511,38 @@ class _ProjectCommandCenterScreenState extends ConsumerState<ProjectCommandCente
                               ],
                             ),
                           ),
+                          if (!m.isCompleted) ...[
+                            const SizedBox(width: 6),
+                            InkWell(
+                              onTap: () async {
+                                final success = await ref
+                                    .read(projectDetailNotifierProvider(widget.projectId).notifier)
+                                    .toggleMilestone(m.id, true);
+                                if (mounted && success) {
+                                  AppToast.showSuccess(
+                                    context,
+                                    'Milestone completed! +${m.xpReward} XP awarded to team!',
+                                  );
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.success.withAlpha(30),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: AppTheme.success.withAlpha(90)),
+                                ),
+                                child: const Text(
+                                  'Complete',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.success,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                       if (m.description.isNotEmpty) ...[

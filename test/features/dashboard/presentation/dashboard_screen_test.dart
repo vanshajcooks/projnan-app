@@ -51,6 +51,8 @@ class FakeAuthNotifier extends Notifier<AuthState> implements AuthNotifier {
   Future<Map<String, dynamic>> forgotPassword(String email) async => {'success': true};
   @override
   Future<Map<String, dynamic>> resendVerification() async => {'success': true};
+  @override
+  Future<Map<String, dynamic>> resetPassword({required String token, required String newPassword}) async => {'success': true};
 }
 
 void main() {

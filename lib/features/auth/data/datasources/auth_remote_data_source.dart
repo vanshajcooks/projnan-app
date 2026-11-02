@@ -54,6 +54,11 @@ abstract class IAuthRemoteDataSource {
   Future<Map<String, dynamic>> forgotPassword(String email);
 
   Future<Map<String, dynamic>> resendVerification();
+
+  Future<Map<String, dynamic>> resetPassword({
+    required String token,
+    required String newPassword,
+  });
 }
 
 class AuthRemoteDataSource implements IAuthRemoteDataSource {
@@ -163,6 +168,28 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
         return response.data as Map<String, dynamic>;
       }
       return {'success': true, 'message': 'Verification link sent to your email.'};
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await apiClient.post(
+        '/auth/reset-password',
+        data: {
+          'token': token.trim(),
+          'newPassword': newPassword,
+        },
+      );
+      if (response.data is Map<String, dynamic>) {
+        return response.data as Map<String, dynamic>;
+      }
+      return {'success': true, 'message': 'Password has been reset successfully.'};
     } on DioException catch (e) {
       throw _handleDioError(e);
     }

@@ -26,6 +26,8 @@ abstract class IProjectsRepository {
   Future<List<FeedbackModel>> getProjectFeedback(int projectId);
   Future<FeedbackModel> createFeedback(int projectId, String comment, {int rating = 5, String type = 'teacher_review'});
   Future<MilestoneModel> createMilestone(int projectId, String title, String description, {int xpReward = 100, String? dueDate});
+  Future<MilestoneModel> updateMilestone(int projectId, int milestoneId, {String? status, String? title, String? description});
+  Future<ProjectModel> updateProject(int projectId, {String? name, String? description, String? status, List<String>? tags, List<String>? goals});
   Future<ProjectAnalyticsModel> getProjectAnalytics(int projectId);
 }
 
@@ -243,6 +245,44 @@ class ProjectsRepository implements IProjectsRepository {
       return MilestoneModel.fromJson(data['data'] as Map<String, dynamic>);
     }
     throw Exception(data?['message'] ?? 'Failed to create milestone');
+  }
+
+  @override
+  Future<MilestoneModel> updateMilestone(int projectId, int milestoneId, {String? status, String? title, String? description}) async {
+    final payload = <String, dynamic>{};
+    if (status != null) payload['status'] = status;
+    if (title != null) payload['title'] = title.trim();
+    if (description != null) payload['description'] = description.trim();
+
+    final response = await apiClient.put(
+      '/projects/$projectId/milestones/$milestoneId',
+      data: payload,
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic> && data['data'] != null) {
+      return MilestoneModel.fromJson(data['data'] as Map<String, dynamic>);
+    }
+    throw Exception(data?['message'] ?? 'Failed to update milestone');
+  }
+
+  @override
+  Future<ProjectModel> updateProject(int projectId, {String? name, String? description, String? status, List<String>? tags, List<String>? goals}) async {
+    final payload = <String, dynamic>{};
+    if (name != null) payload['name'] = name.trim();
+    if (description != null) payload['description'] = description.trim();
+    if (status != null) payload['status'] = status;
+    if (tags != null) payload['tags'] = tags;
+    if (goals != null) payload['goals'] = goals;
+
+    final response = await apiClient.put(
+      '/projects/$projectId',
+      data: payload,
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic> && data['data'] != null) {
+      return ProjectModel.fromJson(data['data'] as Map<String, dynamic>);
+    }
+    throw Exception(data?['message'] ?? 'Failed to update project');
   }
 
   @override

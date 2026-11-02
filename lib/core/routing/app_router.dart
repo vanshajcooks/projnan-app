@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/controllers/auth_state.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/chat/presentation/screens/project_chat_screen.dart';
 import '../../features/classes/presentation/screens/class_roster_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
@@ -25,7 +26,9 @@ class RouterNotifier extends ChangeNotifier {
   String? redirect(BuildContext context, GoRouterState state) {
     final authState = _ref.read(authNotifierProvider);
     final isAuthenticated = authState.isAuthenticated;
-    final isAuthRoute = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+    final isAuthRoute = state.matchedLocation == '/login' ||
+        state.matchedLocation == '/register' ||
+        state.matchedLocation == '/reset-password';
 
     // If unauthenticated and trying to access dashboard/protected routes -> redirect to login
     if (!isAuthenticated && !isAuthRoute) {
@@ -64,6 +67,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'];
+          return ResetPasswordScreen(initialToken: token);
+        },
       ),
       GoRoute(
         path: '/dashboard',

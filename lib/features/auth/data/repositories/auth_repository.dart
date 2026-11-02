@@ -17,6 +17,7 @@ abstract class IAuthRepository {
   Future<bool> hasSavedToken();
   Future<Map<String, dynamic>> forgotPassword(String email);
   Future<Map<String, dynamic>> resendVerification();
+  Future<Map<String, dynamic>> resetPassword({required String token, required String newPassword});
 }
 
 class AuthRepository implements IAuthRepository {
@@ -94,5 +95,10 @@ class AuthRepository implements IAuthRepository {
   @override
   Future<Map<String, dynamic>> resendVerification() async {
     return await remoteDataSource.resendVerification();
+  }
+
+  @override
+  Future<Map<String, dynamic>> resetPassword({required String token, required String newPassword}) async {
+    return await remoteDataSource.resetPassword(token: token, newPassword: newPassword);
   }
 }

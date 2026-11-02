@@ -152,6 +152,46 @@ class ProjectDetailNotifier extends Notifier<ProjectDetailState> {
       return false;
     }
   }
+
+  Future<bool> toggleMilestone(int milestoneId, bool completed) async {
+    try {
+      final repo = ref.read(projectsRepositoryProvider);
+      await repo.updateMilestone(
+        projectId,
+        milestoneId,
+        status: completed ? 'completed' : 'pending',
+      );
+      await loadDetails();
+      return true;
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> updateProjectDetails({
+    String? name,
+    String? description,
+    String? status,
+    List<String>? tags,
+  }) async {
+    try {
+      final repo = ref.read(projectsRepositoryProvider);
+      final updated = await repo.updateProject(
+        projectId,
+        name: name,
+        description: description,
+        status: status,
+        tags: tags,
+      );
+      state = state.copyWith(project: updated);
+      await loadDetails();
+      return true;
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
+      return false;
+    }
+  }
 }
 
 final projectDetailNotifierProvider =

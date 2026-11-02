@@ -17,12 +17,20 @@ class TasksTab extends ConsumerStatefulWidget {
 }
 
 class _TasksTabState extends ConsumerState<TasksTab> {
+  final _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       ref.read(tasksNotifierProvider.notifier).fetchTasks();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -104,38 +112,104 @@ class _TasksTabState extends ConsumerState<TasksTab> {
             ),
           ),
 
-          // Filter Chips
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (val) => ref.read(tasksNotifierProvider.notifier).setSearchQuery(val),
+              style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'Search tasks by title, project...',
+                hintStyle: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                prefixIcon: const Icon(LucideIcons.search, size: 16, color: AppTheme.textSecondary),
+                suffixIcon: tasksState.searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(LucideIcons.x, size: 14),
+                        onPressed: () {
+                          _searchController.clear();
+                          ref.read(tasksNotifierProvider.notifier).setSearchQuery('');
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: AppTheme.surfaceElevated,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: AppTheme.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: AppTheme.border),
+                ),
+              ),
+            ),
+          ),
+
+          // Status & Priority Filter Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 6.0),
             child: Row(
-              children: ['All', 'Planned', 'In Progress', 'Verification Pending', 'Completed'].map((filter) {
-                final isSelected = tasksState.selectedFilter == filter;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: ChoiceChip(
-                    label: Text(filter),
-                    selected: isSelected,
-                    showCheckmark: false,
-                    onSelected: (_) {
-                      ref.read(tasksNotifierProvider.notifier).setFilter(filter);
-                    },
-                    selectedColor: AppTheme.primary,
-                    backgroundColor: AppTheme.surface,
-                    labelStyle: TextStyle(
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                      color: isSelected ? Colors.white : AppTheme.textSecondary,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(
-                        color: isSelected ? AppTheme.primary : AppTheme.border,
+              children: [
+                ...['All', 'Planned', 'In Progress', 'Verification Pending', 'Completed'].map((filter) {
+                  final isSelected = tasksState.selectedFilter == filter;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6.0),
+                    child: ChoiceChip(
+                      label: Text(filter),
+                      selected: isSelected,
+                      showCheckmark: false,
+                      onSelected: (_) => ref.read(tasksNotifierProvider.notifier).setFilter(filter),
+                      selectedColor: AppTheme.primary,
+                      backgroundColor: AppTheme.surface,
+                      labelStyle: TextStyle(
+                        fontSize: 11,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        color: isSelected ? Colors.white : AppTheme.textSecondary,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(color: isSelected ? AppTheme.primary : AppTheme.border),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }),
+                const SizedBox(width: 8),
+                Container(height: 20, width: 1, color: AppTheme.border),
+                const SizedBox(width: 8),
+                // Priority chips
+                ...['All', 'Urgent', 'High', 'Medium', 'Low'].map((prio) {
+                  final isSelected = tasksState.selectedPriority.toLowerCase() == prio.toLowerCase();
+                  Color prioColor = AppTheme.textSecondary;
+                  if (prio == 'Urgent') prioColor = AppTheme.error;
+                  if (prio == 'High') prioColor = const Color(0xFFF97316);
+                  if (prio == 'Medium') prioColor = const Color(0xFF38BDF8);
+                  if (prio == 'Low') prioColor = const Color(0xFF10B981);
+
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6.0),
+                    child: FilterChip(
+                      label: Text(prio == 'All' ? 'All Priority' : prio),
+                      selected: isSelected,
+                      showCheckmark: false,
+                      onSelected: (_) => ref.read(tasksNotifierProvider.notifier).setPriorityFilter(prio),
+                      selectedColor: prioColor.withAlpha(45),
+                      backgroundColor: AppTheme.surface,
+                      labelStyle: TextStyle(
+                        fontSize: 11,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? prioColor : AppTheme.textSecondary,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(color: isSelected ? prioColor : AppTheme.border),
+                      ),
+                    ),
+                  );
+                }),
+              ],
             ),
           ),
 
