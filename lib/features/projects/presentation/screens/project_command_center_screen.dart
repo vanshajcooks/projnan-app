@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/app_notifications.dart';
 import '../../../tasks/presentation/widgets/create_task_bottom_sheet.dart';
+import '../../data/models/project_model.dart';
 import '../controllers/project_detail_controller.dart';
 import '../widgets/add_feedback_dialog.dart';
 import '../widgets/add_milestone_dialog.dart';
@@ -27,7 +28,7 @@ class _ProjectCommandCenterScreenState extends ConsumerState<ProjectCommandCente
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -328,6 +329,7 @@ class _ProjectCommandCenterScreenState extends ConsumerState<ProjectCommandCente
                               Tab(text: 'Milestones'),
                               Tab(text: 'GitHub Hub'),
                               Tab(text: 'Evaluations'),
+                              Tab(text: 'Analytics'),
                             ],
                           ),
                         ),
@@ -340,6 +342,7 @@ class _ProjectCommandCenterScreenState extends ConsumerState<ProjectCommandCente
                       _buildMilestonesTab(project, state),
                       _buildGitHubTab(project, state),
                       _buildFeedbackTab(state),
+                      _buildAnalyticsTab(project, state),
                     ],
                   ),
                 ),
@@ -868,6 +871,326 @@ class _ProjectCommandCenterScreenState extends ConsumerState<ProjectCommandCente
                 ),
               );
             }),
+        ],
+      ),
+    );
+  }
+
+  // TAB 4: Team Contribution Analytics & Velocity
+  Widget _buildAnalyticsTab(ProjectModel project, ProjectDetailState state) {
+    final analytics = state.analytics;
+
+    if (analytics == null) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppTheme.primary),
+      );
+    }
+
+    final totalTasks = analytics.totalTasks;
+    final completedTasks = analytics.completedTasks;
+    final rate = analytics.completionRate;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Project Velocity & Task Completion Card
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppTheme.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(LucideIcons.trendingUp, size: 18, color: AppTheme.primaryLight),
+                        SizedBox(width: 8),
+                        Text(
+                          'Project Velocity & Completion',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withAlpha(35),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.primary.withAlpha(90)),
+                      ),
+                      child: Text(
+                        '$rate%',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryLight,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: totalTasks > 0 ? (completedTasks / totalTasks) : 0,
+                    minHeight: 10,
+                    backgroundColor: AppTheme.surfaceElevated,
+                    valueColor: const AlwaysStoppedAnimation(AppTheme.primary),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  '$completedTasks of $totalTasks Tasks Completed',
+                  style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                ),
+                const SizedBox(height: 14),
+
+                // Task Status Badges
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildStatusChip('Planned', analytics.tasksByStatus['Planned'] ?? 0, AppTheme.textSecondary),
+                    _buildStatusChip('In Progress', analytics.tasksByStatus['In Progress'] ?? 0, const Color(0xFF38BDF8)),
+                    _buildStatusChip('Review', analytics.tasksByStatus['Verification Pending'] ?? 0, const Color(0xFFFBBF24)),
+                    _buildStatusChip('Completed', analytics.tasksByStatus['Completed'] ?? 0, AppTheme.success),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Total Activities Summary Row
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accent.withAlpha(35),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(LucideIcons.activity, size: 18, color: AppTheme.accent),
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${analytics.totalContributions}',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                          ),
+                          const Text('Activities', style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFBBF24).withAlpha(35),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(LucideIcons.zap, size: 18, color: Color(0xFFFBBF24)),
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${analytics.totalXp} XP',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                          ),
+                          const Text('Total Earned', style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Team Member Contribution Breakdown
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Member Contribution Share',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              Text(
+                '${analytics.memberAnalytics.length} Members',
+                style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          if (analytics.memberAnalytics.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.border),
+              ),
+              child: const Center(
+                child: Text(
+                  'No team contributions recorded yet. Push commits or complete tasks to see activity analytics.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                ),
+              ),
+            )
+          else
+            ...analytics.memberAnalytics.map((member) {
+              final sharePct = member.percentage;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppTheme.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: AppTheme.primary.withAlpha(45),
+                          child: Text(
+                            member.name.isNotEmpty ? member.name[0].toUpperCase() : 'M',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryLight),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                member.name,
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                              ),
+                              Text(
+                                '@${member.username} · ${member.role}',
+                                style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withAlpha(30),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '$sharePct% Share',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.primaryLight),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: (sharePct / 100).clamp(0.0, 1.0),
+                        minHeight: 6,
+                        backgroundColor: AppTheme.surfaceElevated,
+                        valueColor: const AlwaysStoppedAnimation(AppTheme.primary),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${member.contributionCount} activities',
+                          style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                        ),
+                        Text(
+                          '${member.tasksCompleted} tasks · ${member.xpEarned} XP',
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFFFBBF24)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(String label, int count, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withAlpha(25),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withAlpha(80)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '$label: $count',
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+          ),
         ],
       ),
     );

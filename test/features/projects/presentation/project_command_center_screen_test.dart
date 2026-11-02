@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:probon_app/features/projects/data/models/feedback_model.dart';
 import 'package:probon_app/features/projects/data/models/github_activity_model.dart';
 import 'package:probon_app/features/projects/data/models/milestone_model.dart';
+import 'package:probon_app/features/projects/data/models/project_analytics_model.dart';
 import 'package:probon_app/features/projects/data/models/project_model.dart';
 import 'package:probon_app/features/projects/data/repositories/projects_repository.dart';
 import 'package:probon_app/features/projects/presentation/controllers/projects_controller.dart';
@@ -93,6 +94,7 @@ void main() {
     when(() => mockRepository.getPullRequests(107)).thenAnswer((_) async => <GitHubActivityModel>[]);
     when(() => mockRepository.getIssues(107)).thenAnswer((_) async => <GitHubActivityModel>[]);
     when(() => mockRepository.getProjectFeedback(107)).thenAnswer((_) async => sampleFeedbacks);
+    when(() => mockRepository.getProjectAnalytics(107)).thenAnswer((_) async => const ProjectAnalyticsModel());
   });
 
   Widget buildTestWidget() {

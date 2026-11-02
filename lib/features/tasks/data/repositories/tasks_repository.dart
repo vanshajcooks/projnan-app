@@ -1,4 +1,5 @@
 import '../../../../core/network/api_client.dart';
+import '../../../../core/storage/offline_cache_service.dart';
 import '../models/task_model.dart';
 
 abstract class ITasksRepository {
@@ -21,8 +22,9 @@ abstract class ITasksRepository {
 
 class TasksRepository implements ITasksRepository {
   final ApiClient apiClient;
+  final IOfflineCacheService? cacheService;
 
-  TasksRepository({required this.apiClient});
+  TasksRepository({required this.apiClient, this.cacheService});
 
   @override
   Future<List<TaskModel>> getMyTasks() async {
@@ -31,7 +33,12 @@ class TasksRepository implements ITasksRepository {
       final data = response.data;
       if (data is Map<String, dynamic> && data['data'] != null) {
         final list = data['data'] as List;
-        return list.map((item) => TaskModel.fromJson(item as Map<String, dynamic>)).toList();
+        final tasks = list.map((item) => TaskModel.fromJson(item as Map<String, dynamic>)).toList();
+        if (cacheService != null) {
+          final jsonList = tasks.map((t) => t.toJson()).toList();
+          await cacheService!.cacheJsonList('cached_my_tasks', jsonList);
+        }
+        return tasks;
       }
       return [];
     } catch (_) {
@@ -40,9 +47,22 @@ class TasksRepository implements ITasksRepository {
         final data = fallback.data;
         if (data is Map<String, dynamic> && data['data'] != null) {
           final list = data['data'] as List;
-          return list.map((item) => TaskModel.fromJson(item as Map<String, dynamic>)).toList();
+          final tasks = list.map((item) => TaskModel.fromJson(item as Map<String, dynamic>)).toList();
+          if (cacheService != null) {
+            final jsonList = tasks.map((t) => t.toJson()).toList();
+            await cacheService!.cacheJsonList('cached_my_tasks', jsonList);
+          }
+          return tasks;
         }
       } catch (_) {}
+
+      // Fallback to offline cache
+      if (cacheService != null) {
+        final cached = await cacheService!.getCachedJsonList('cached_my_tasks');
+        if (cached != null && cached.isNotEmpty) {
+          return cached.map((item) => TaskModel.fromJson(item)).toList();
+        }
+      }
       return [];
     }
   }

@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/storage/storage_providers.dart';
 import '../../../auth/presentation/controllers/auth_state.dart';
 import '../../data/models/project_model.dart';
 import '../../data/repositories/projects_repository.dart';
 
 final projectsRepositoryProvider = Provider<IProjectsRepository>((ref) {
   final client = ref.watch(apiClientProvider);
-  return ProjectsRepository(apiClient: client);
+  final cache = ref.watch(offlineCacheServiceProvider);
+  return ProjectsRepository(apiClient: client, cacheService: cache);
 });
 
 class ProjectsState {

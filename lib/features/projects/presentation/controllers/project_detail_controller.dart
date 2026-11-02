@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/feedback_model.dart';
 import '../../data/models/github_activity_model.dart';
+import '../../data/models/project_analytics_model.dart';
 import '../../data/models/project_model.dart';
 import 'projects_controller.dart';
 
@@ -12,6 +13,7 @@ class ProjectDetailState {
   final List<GitHubActivityModel> pullRequests;
   final List<GitHubActivityModel> issues;
   final List<FeedbackModel> feedbacks;
+  final ProjectAnalyticsModel? analytics;
   final String? errorMessage;
 
   const ProjectDetailState({
@@ -22,6 +24,7 @@ class ProjectDetailState {
     this.pullRequests = const [],
     this.issues = const [],
     this.feedbacks = const [],
+    this.analytics,
     this.errorMessage,
   });
 
@@ -33,6 +36,7 @@ class ProjectDetailState {
     List<GitHubActivityModel>? pullRequests,
     List<GitHubActivityModel>? issues,
     List<FeedbackModel>? feedbacks,
+    ProjectAnalyticsModel? analytics,
     String? errorMessage,
   }) {
     return ProjectDetailState(
@@ -43,6 +47,7 @@ class ProjectDetailState {
       pullRequests: pullRequests ?? this.pullRequests,
       issues: issues ?? this.issues,
       feedbacks: feedbacks ?? this.feedbacks,
+      analytics: analytics ?? this.analytics,
       errorMessage: errorMessage,
     );
   }
@@ -69,6 +74,7 @@ class ProjectDetailNotifier extends Notifier<ProjectDetailState> {
         repo.getPullRequests(projectId),
         repo.getIssues(projectId),
         repo.getProjectFeedback(projectId),
+        repo.getProjectAnalytics(projectId),
       ]);
 
       state = state.copyWith(
@@ -78,6 +84,7 @@ class ProjectDetailNotifier extends Notifier<ProjectDetailState> {
         pullRequests: results[2] as List<GitHubActivityModel>,
         issues: results[3] as List<GitHubActivityModel>,
         feedbacks: results[4] as List<FeedbackModel>,
+        analytics: results[5] as ProjectAnalyticsModel,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());

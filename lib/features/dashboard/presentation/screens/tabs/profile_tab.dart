@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:probon_app/core/theme/app_theme.dart';
 import 'package:probon_app/features/auth/presentation/controllers/auth_state.dart';
+import 'package:probon_app/features/classes/presentation/controllers/classes_controller.dart';
 import 'package:probon_app/features/gamification/presentation/controllers/gamification_controller.dart';
 
 class ProfileTab extends ConsumerWidget {
@@ -52,6 +53,7 @@ class ProfileTab extends ConsumerWidget {
     final authState = ref.watch(authNotifierProvider);
     final user = authState.user;
     final gamificationState = ref.watch(gamificationNotifierProvider);
+    final classesState = ref.watch(classesNotifierProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -249,6 +251,60 @@ class ProfileTab extends ConsumerWidget {
                 ],
               ),
             ),
+            if (classesState.classes.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Enrolled Classes',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            '${classesState.classes.length} Classes',
+                            style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      ...classesState.classes.map((cls) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceElevated,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppTheme.border),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                            title: Text(
+                              cls.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                            subtitle: Text(
+                              'Code: ${cls.code} · ${cls.studentCount} students',
+                              style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                            ),
+                            trailing: const Icon(LucideIcons.chevronRight, size: 16, color: AppTheme.textSecondary),
+                            onTap: () => context.push('/classes/${cls.id}/roster'),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
 
             // Logout Button

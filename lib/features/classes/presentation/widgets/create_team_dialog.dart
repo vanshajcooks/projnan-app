@@ -6,13 +6,15 @@ import '../../../../core/utils/app_notifications.dart';
 import '../controllers/classes_controller.dart';
 
 class CreateTeamDialog extends ConsumerStatefulWidget {
-  const CreateTeamDialog({super.key});
+  final int? initialClassId;
 
-  static Future<void> show(BuildContext context) {
+  const CreateTeamDialog({super.key, this.initialClassId});
+
+  static Future<void> show(BuildContext context, {int? initialClassId}) {
     return showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (ctx) => const CreateTeamDialog(),
+      builder: (ctx) => CreateTeamDialog(initialClassId: initialClassId),
     );
   }
 
@@ -29,10 +31,13 @@ class _CreateTeamDialogState extends ConsumerState<CreateTeamDialog> {
   @override
   void initState() {
     super.initState();
+    _selectedClassId = widget.initialClassId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final classes = ref.read(classesNotifierProvider).classes;
-      if (classes.isNotEmpty) {
-        setState(() => _selectedClassId = classes.first.id);
+      if (_selectedClassId == null) {
+        final classes = ref.read(classesNotifierProvider).classes;
+        if (classes.isNotEmpty) {
+          setState(() => _selectedClassId = classes.first.id);
+        }
       }
     });
   }

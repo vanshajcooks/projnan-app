@@ -7,6 +7,7 @@ import '../../../../core/utils/validators.dart';
 import '../controllers/auth_state.dart';
 import '../widgets/auth_error_banner.dart';
 import '../widgets/auth_text_field.dart';
+import '../widgets/forgot_password_dialog.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -129,7 +130,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       validator: Validators.validateLoginPassword,
                       onFieldSubmitted: (_) => _handleLogin(),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 8),
+
+                    // Forgot Password link
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => ForgotPasswordDialog(
+                              initialEmail: _emailController.text.trim(),
+                            ),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text(
+                          'Forgot Password?',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primaryLight,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
 
                     // Submit Button
                     ElevatedButton(

@@ -16,6 +16,7 @@ import 'package:probon_app/features/tasks/presentation/controllers/tasks_control
 import 'package:probon_app/features/tasks/presentation/widgets/create_task_bottom_sheet.dart';
 import 'package:probon_app/features/tasks/presentation/widgets/task_card.dart';
 import 'package:probon_app/features/tasks/presentation/widgets/task_detail_bottom_sheet.dart';
+import '../../widgets/email_verification_banner.dart';
 
 class DashboardTab extends ConsumerWidget {
   final void Function(int tabIndex)? onNavigateToTab;
@@ -95,6 +96,10 @@ class DashboardTab extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
+
+            // Email verification alert if not verified
+            if (user != null && !user.emailVerified)
+              const EmailVerificationBanner(),
 
             // User Greeting Card
             Card(

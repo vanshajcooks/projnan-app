@@ -1,7 +1,9 @@
 import '../../../../core/network/api_client.dart';
+import '../../../../core/storage/offline_cache_service.dart';
 import '../models/feedback_model.dart';
 import '../models/github_activity_model.dart';
 import '../models/milestone_model.dart';
+import '../models/project_analytics_model.dart';
 import '../models/project_model.dart';
 
 abstract class IProjectsRepository {
@@ -24,12 +26,14 @@ abstract class IProjectsRepository {
   Future<List<FeedbackModel>> getProjectFeedback(int projectId);
   Future<FeedbackModel> createFeedback(int projectId, String comment, {int rating = 5, String type = 'teacher_review'});
   Future<MilestoneModel> createMilestone(int projectId, String title, String description, {int xpReward = 100, String? dueDate});
+  Future<ProjectAnalyticsModel> getProjectAnalytics(int projectId);
 }
 
 class ProjectsRepository implements IProjectsRepository {
   final ApiClient apiClient;
+  final IOfflineCacheService? cacheService;
 
-  ProjectsRepository({required this.apiClient});
+  ProjectsRepository({required this.apiClient, this.cacheService});
 
   @override
   Future<List<ProjectModel>> getUserProjects() async {
@@ -38,19 +42,37 @@ class ProjectsRepository implements IProjectsRepository {
       final data = response.data;
       if (data is Map<String, dynamic> && data['data'] != null) {
         final list = data['data'] as List;
-        return list.map((item) => ProjectModel.fromJson(item as Map<String, dynamic>)).toList();
+        final projs = list.map((item) => ProjectModel.fromJson(item as Map<String, dynamic>)).toList();
+        if (cacheService != null) {
+          final jsonList = projs.map((p) => p.toJson()).toList();
+          await cacheService!.cacheJsonList('cached_user_projects', jsonList);
+        }
+        return projs;
       }
       return [];
     } catch (_) {
-      // If /projects/my fails or empty, attempt /projects
+      // If /projects/my fails or empty, attempt /projects or offline cache
       try {
         final fallback = await apiClient.get('/projects');
         final data = fallback.data;
         if (data is Map<String, dynamic> && data['data'] != null) {
           final list = data['data'] as List;
-          return list.map((item) => ProjectModel.fromJson(item as Map<String, dynamic>)).toList();
+          final projs = list.map((item) => ProjectModel.fromJson(item as Map<String, dynamic>)).toList();
+          if (cacheService != null) {
+            final jsonList = projs.map((p) => p.toJson()).toList();
+            await cacheService!.cacheJsonList('cached_user_projects', jsonList);
+          }
+          return projs;
         }
       } catch (_) {}
+
+      // Fallback to offline cache
+      if (cacheService != null) {
+        final cached = await cacheService!.getCachedJsonList('cached_user_projects');
+        if (cached != null && cached.isNotEmpty) {
+          return cached.map((item) => ProjectModel.fromJson(item)).toList();
+        }
+      }
       return [];
     }
   }
@@ -221,5 +243,19 @@ class ProjectsRepository implements IProjectsRepository {
       return MilestoneModel.fromJson(data['data'] as Map<String, dynamic>);
     }
     throw Exception(data?['message'] ?? 'Failed to create milestone');
+  }
+
+  @override
+  Future<ProjectAnalyticsModel> getProjectAnalytics(int projectId) async {
+    try {
+      final response = await apiClient.get('/progress/analytics/$projectId');
+      final data = response.data;
+      if (data is Map<String, dynamic> && data['data'] != null) {
+        return ProjectAnalyticsModel.fromJson(data['data'] as Map<String, dynamic>);
+      }
+      return const ProjectAnalyticsModel();
+    } catch (_) {
+      return const ProjectAnalyticsModel();
+    }
   }
 }

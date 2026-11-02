@@ -158,6 +158,16 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(status: AuthStatus.unauthenticated, errorMessage: null);
     }
   }
+
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    final repository = ref.read(authRepositoryProvider);
+    return await repository.forgotPassword(email);
+  }
+
+  Future<Map<String, dynamic>> resendVerification() async {
+    final repository = ref.read(authRepositoryProvider);
+    return await repository.resendVerification();
+  }
 }
 
 final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(() {

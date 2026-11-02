@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/storage/storage_providers.dart';
 import '../../../auth/presentation/controllers/auth_state.dart';
 import '../../data/models/task_model.dart';
 import '../../data/repositories/tasks_repository.dart';
 
 final tasksRepositoryProvider = Provider<ITasksRepository>((ref) {
   final client = ref.watch(apiClientProvider);
-  return TasksRepository(apiClient: client);
+  final cache = ref.watch(offlineCacheServiceProvider);
+  return TasksRepository(apiClient: client, cacheService: cache);
 });
 
 class TasksState {

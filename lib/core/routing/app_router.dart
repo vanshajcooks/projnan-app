@@ -5,6 +5,7 @@ import '../../features/auth/presentation/controllers/auth_state.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/chat/presentation/screens/project_chat_screen.dart';
+import '../../features/classes/presentation/screens/class_roster_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/gamification/presentation/screens/weekly_arena_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
@@ -103,6 +104,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/classes/:id/roster',
+        builder: (context, state) {
+          final idStr = state.pathParameters['id'] ?? '0';
+          final classId = int.tryParse(idStr) ?? 0;
+          return ClassRosterScreen(classId: classId);
+        },
       ),
       GoRoute(
         path: '/projects/:id/chat',
