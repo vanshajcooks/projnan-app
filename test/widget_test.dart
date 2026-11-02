@@ -33,7 +33,7 @@ void main() {
     expect(find.text('Probon'), findsOneWidget);
     expect(find.text('Collaborative Learning & Project Platform'), findsOneWidget);
 
-    // Let any pending timer / post-frame callbacks resolve
-    await tester.pumpAndSettle();
+    // Pump one frame to advance post-frame callback
+    await tester.pump(const Duration(milliseconds: 100));
   });
 }

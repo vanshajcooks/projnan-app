@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/storage/token_storage.dart';
+import '../../data/datasources/auth_remote_data_source.dart';
 import '../../data/models/user_model.dart';
+import '../../data/repositories/auth_repository.dart';
 
 // Storage Provider
 final tokenStorageProvider = Provider<ITokenStorage>((ref) {
@@ -19,9 +21,32 @@ final apiClientProvider = Provider<ApiClient>((ref) {
   );
 });
 
-// Auth State Definition
-enum AuthStatus { initial, authenticating, authenticated, unauthenticated, error }
+// Remote Data Source Provider
+final authRemoteDataSourceProvider = Provider<IAuthRemoteDataSource>((ref) {
+  final client = ref.watch(apiClientProvider);
+  return AuthRemoteDataSource(apiClient: client);
+});
 
+// Repository Provider
+final authRepositoryProvider = Provider<IAuthRepository>((ref) {
+  final remote = ref.watch(authRemoteDataSourceProvider);
+  final storage = ref.watch(tokenStorageProvider);
+  return AuthRepository(
+    remoteDataSource: remote,
+    tokenStorage: storage,
+  );
+});
+
+// Auth Status Enum
+enum AuthStatus {
+  initial,
+  authenticating,
+  authenticated,
+  unauthenticated,
+  error,
+}
+
+// Auth State Class
 class AuthState {
   final AuthStatus status;
   final UserModel? user;
@@ -35,6 +60,7 @@ class AuthState {
 
   bool get isAuthenticated => status == AuthStatus.authenticated && user != null;
   bool get isLoading => status == AuthStatus.authenticating;
+  bool get hasError => status == AuthStatus.error && errorMessage != null;
 
   AuthState copyWith({
     AuthStatus? status,
@@ -44,12 +70,12 @@ class AuthState {
     return AuthState(
       status: status ?? this.status,
       user: user ?? this.user,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: errorMessage,
     );
   }
 }
 
-// Auth State Controller
+// Auth Notifier
 class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
@@ -57,60 +83,80 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> checkAuthStatus() async {
-    state = state.copyWith(status: AuthStatus.authenticating);
+    state = state.copyWith(status: AuthStatus.authenticating, errorMessage: null);
     try {
-      final storage = ref.read(tokenStorageProvider);
-      final hasToken = await storage.hasToken();
+      final repository = ref.read(authRepositoryProvider);
+      final user = await repository.getCurrentUser();
 
-      if (!hasToken) {
+      if (user != null) {
+        state = AuthState(status: AuthStatus.authenticated, user: user);
+      } else {
         state = const AuthState(status: AuthStatus.unauthenticated);
-        return;
       }
-
-      final client = ref.read(apiClientProvider);
-      final response = await client.get('/auth/me');
-
-      if (response.statusCode == 200 && response.data != null) {
-        final data = response.data as Map<String, dynamic>;
-        if (data['success'] == true && data['data'] != null) {
-          final user = UserModel.fromJson(data['data'] as Map<String, dynamic>);
-          state = AuthState(status: AuthStatus.authenticated, user: user);
-          return;
-        }
-      }
-
-      // If token invalid, clear and set unauthenticated
-      await storage.deleteToken();
-      state = const AuthState(status: AuthStatus.unauthenticated);
-    } catch (_) {
-      // Offline or network error: if token exists, we can still fall back or show error
+    } catch (e) {
       state = const AuthState(status: AuthStatus.unauthenticated);
     }
   }
 
-  void setUserSession(UserModel user, String token) async {
-    final storage = ref.read(tokenStorageProvider);
-    await storage.saveToken(token);
-    state = AuthState(status: AuthStatus.authenticated, user: user);
+  Future<bool> login(String email, String password) async {
+    state = state.copyWith(status: AuthStatus.authenticating, errorMessage: null);
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final user = await repository.login(email: email, password: password);
+      state = AuthState(status: AuthStatus.authenticated, user: user);
+      return true;
+    } catch (e) {
+      final errorMsg = e is AuthException ? e.message : e.toString();
+      state = AuthState(status: AuthStatus.error, errorMessage: errorMsg);
+      return false;
+    }
+  }
+
+  Future<bool> register({
+    required String name,
+    required String username,
+    required String email,
+    required String password,
+    required String role,
+    String? classCode,
+  }) async {
+    state = state.copyWith(status: AuthStatus.authenticating, errorMessage: null);
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final user = await repository.register(
+        name: name,
+        username: username,
+        email: email,
+        password: password,
+        role: role,
+        classCode: classCode,
+      );
+      state = AuthState(status: AuthStatus.authenticated, user: user);
+      return true;
+    } catch (e) {
+      final errorMsg = e is AuthException ? e.message : e.toString();
+      state = AuthState(status: AuthStatus.error, errorMessage: errorMsg);
+      return false;
+    }
   }
 
   Future<void> logout() async {
-    final storage = ref.read(tokenStorageProvider);
     try {
-      final client = ref.read(apiClientProvider);
-      await client.post('/auth/logout');
-    } catch (_) {
-      // Ignore network failure on logout
+      final repository = ref.read(authRepositoryProvider);
+      await repository.logout();
     } finally {
-      await storage.deleteToken();
       state = const AuthState(status: AuthStatus.unauthenticated);
     }
   }
 
-  void handleUnauthorized() async {
-    final storage = ref.read(tokenStorageProvider);
-    await storage.deleteToken();
+  void handleUnauthorized() {
     state = const AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  void clearError() {
+    if (state.hasError) {
+      state = state.copyWith(status: AuthStatus.unauthenticated, errorMessage: null);
+    }
   }
 }
 
