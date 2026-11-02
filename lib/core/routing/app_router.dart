@@ -5,6 +5,7 @@ import '../../features/auth/presentation/controllers/auth_state.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../features/projects/presentation/screens/project_command_center_screen.dart';
 
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
@@ -70,6 +71,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/projects',
         redirect: (context, state) => '/dashboard?tab=1',
+      ),
+      GoRoute(
+        path: '/projects/:id',
+        builder: (context, state) {
+          final idStr = state.pathParameters['id'] ?? '0';
+          final projectId = int.tryParse(idStr) ?? 0;
+          return ProjectCommandCenterScreen(projectId: projectId);
+        },
       ),
       GoRoute(
         path: '/tasks',

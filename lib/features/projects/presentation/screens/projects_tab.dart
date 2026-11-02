@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:probon_app/core/theme/app_theme.dart';
 import 'package:probon_app/features/projects/presentation/controllers/projects_controller.dart';
 import 'package:probon_app/features/projects/presentation/widgets/create_project_bottom_sheet.dart';
 import 'package:probon_app/features/projects/presentation/widgets/project_card.dart';
 import 'package:probon_app/features/projects/presentation/widgets/project_card_skeleton.dart';
-import 'package:probon_app/features/projects/presentation/widgets/project_detail_bottom_sheet.dart';
 
 class ProjectsTab extends ConsumerWidget {
   const ProjectsTab({super.key});
@@ -120,7 +120,7 @@ class ProjectsTab extends ConsumerWidget {
                             return ProjectCard(
                               project: project,
                               onTap: () {
-                                ProjectDetailBottomSheet.show(context, project);
+                                context.push('/projects/${project.id}');
                               },
                             );
                           },

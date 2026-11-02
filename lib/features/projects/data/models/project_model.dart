@@ -1,3 +1,5 @@
+import 'milestone_model.dart';
+
 class ProjectModel {
   final int id;
   final String name;
@@ -13,6 +15,10 @@ class ProjectModel {
   final int taskCount;
   final int completedTaskCount;
   final String? createdAt;
+  final List<MilestoneModel> milestones;
+  final List<Map<String, dynamic>> members;
+  final Map<String, dynamic>? repository;
+  final Map<String, dynamic>? taskStats;
 
   const ProjectModel({
     required this.id,
@@ -29,6 +35,10 @@ class ProjectModel {
     this.taskCount = 0,
     this.completedTaskCount = 0,
     this.createdAt,
+    this.milestones = const [],
+    this.members = const [],
+    this.repository,
+    this.taskStats,
   });
 
   bool get isCompleted => status.toLowerCase() == 'completed' || progress == 100;
@@ -61,6 +71,21 @@ class ProjectModel {
           ? json['completed_task_count'] as int
           : (int.tryParse(json['completed_task_count']?.toString() ?? '0') ?? 0),
       createdAt: json['created_at'] as String?,
+      milestones: (json['milestones'] is List)
+          ? (json['milestones'] as List)
+              .whereType<Map<String, dynamic>>()
+              .map((m) => MilestoneModel.fromJson(m))
+              .toList()
+          : const [],
+      members: (json['members'] is List)
+          ? (json['members'] as List).whereType<Map<String, dynamic>>().toList()
+          : const [],
+      repository: json['repository'] is Map<String, dynamic>
+          ? json['repository'] as Map<String, dynamic>
+          : null,
+      taskStats: json['taskStats'] is Map<String, dynamic>
+          ? json['taskStats'] as Map<String, dynamic>
+          : null,
     );
   }
 
