@@ -71,7 +71,7 @@ class TasksTab extends ConsumerWidget {
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
                       itemCount: 4,
-                      itemBuilder: (_, __) => const TaskCardSkeleton(),
+                      itemBuilder: (context, index) => const TaskCardSkeleton(),
                     )
                   : tasks.isEmpty
                       ? ListView(
